@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map_demo/bar_chart/bar_chart2_screen.dart';
 import 'package:map_demo/bar_chart/bar_chart_screen.dart';
 import 'package:map_demo/cloud_chart/cloud_chart_screen.dart';
 import 'package:map_demo/list/list_screen.dart';
@@ -79,6 +80,17 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Text('BAR 차트'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarChart2Screen(),
+                    ),
+                  );
+                },
+                child: Text('BAR 차트2'),
               ),
               ElevatedButton(
                 onPressed: () {
