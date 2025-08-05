@@ -19,9 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Korea Custom Map Chart',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: ThemeData(primarySwatch: Colors.blue, scaffoldBackgroundColor: Colors.white, appBarTheme: AppBarTheme(backgroundColor: Colors.white)),
         home: const HomeScreen());
   }
 }
