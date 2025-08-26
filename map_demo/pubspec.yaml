@@ -73,8 +73,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/korea_provinces.geojson # 이 경로에 GeoJSON 파일을 넣어주세요!
-    - assets/korea_sigungu.geojson # 이 경로에 GeoJSON 파일을 넣어주세요!
+    - assets/geojson/
+    - assets/geojson/korea_provinces.geojson # 이 경로에 GeoJSON 파일을 넣어주세요!
+    - assets/geojson/korea_sigungu.geojson # 이 경로에 GeoJSON 파일을 넣어주세요!
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -7,6 +7,28 @@ import 'package:latlong2/latlong.dart';
 import 'package:point_in_polygon/point_in_polygon.dart';
 import 'dart:ui' as ui; // 명시적으로 dart:ui 임포트
 
+Map<String, String> provinceNameToSigCodePrefix = {
+  "서울특별시": "11",
+  "부산광역시": "21",
+  "대구광역시": "22",
+  "인천광역시": "23",
+  "광주광역시": "24",
+  "대전광역시": "25",
+  "울산광역시": "26",
+  "세종특별자치시": "29",
+  "경기도": "31",
+  "강원특별자치도": "32",
+  "충청북도": "33",
+  "충청남도": "34",
+  "전북특별자치도": "35",
+  "전라남도": "36",
+  "경상북도": "37",
+  "경상남도": "38",
+  "제주특별자치도": "39",
+  "전라북도": "35",
+  "강원도": "32"
+};
+
 // 지도의 전체 경계를 나타내는 클래스 (최소/최대 위도, 경도)
 class MapBounds {
   final double minLat;
@@ -134,24 +156,24 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
     "11240": 7.4, // 송파구
     "11250": 6.0, // 강동구
     // 강원특별자치도 (SIG_CD 접두사 '51' 사용)
-    "51110": 1.1, // 춘천시
-    "51130": 0.9, // 원주시
-    "51150": 0.7, // 강릉시
-    "51170": 0.5, // 동해시
-    "51180": 0.4, // 태백시
-    "51190": 0.3, // 속초시
-    "51200": 0.6, // 삼척시
-    "51730": 0.2, // 홍천군
-    "51740": 0.1, // 횡성군
-    "51750": 0.15, // 영월군
-    "51760": 0.25, // 평창군
-    "51770": 0.3, // 정선군
-    "51780": 0.18, // 철원군
-    "51790": 0.08, // 화천군
-    "51800": 0.05, // 양구군
-    "51810": 0.07, // 인제군
-    "51820": 0.09, // 고성군
-    "51830": 0.12, // 양양군
+    "32010": 1.1, // 춘천시
+    "32020": 0.9, // 원주시
+    "32030": 0.7, // 강릉시
+    "32040": 0.5, // 동해시
+    "32050": 0.4, // 태백시
+    "32060": 0.3, // 속초시
+    "32070": 0.6, // 삼척시
+    "32510": 0.2, // 홍천군
+    "32520": 0.1, // 횡성군
+    "32530": 0.15, // 영월군
+    "32540": 0.25, // 평창군
+    "32550": 0.3, // 정선군
+    "32560": 0.18, // 철원군
+    "32570": 0.08, // 화천군
+    "32580": 0.05, // 양구군
+    "32590": 0.07, // 인제군
+    "32600": 0.09, // 고성군
+    "32610": 0.12, // 양양군
   };
 
   MapBounds? _mapBounds; // 전체 시/도 지도의 경계
@@ -200,6 +222,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
 
     _provinceDataFuture = _loadAndProcessGeoJson();
     _sigunGuDataFuture = _loadAndProcessSigunGuGeoJson().then((data) {
+      print('_loadAndProcessSigunGuGeoJson : $data');
       _loadedSigunGuData = data;
       // 시/군/구 데이터 로드 후 최소/최대값 계산 (전체 시/군/구 대상)
       if (_sigunGuStatisticalData.isNotEmpty) {
@@ -244,7 +267,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
   static const int _latIndex = 1;
 
   Future<List<ProvinceData>> _loadAndProcessGeoJson() async {
-    final String response = await rootBundle.loadString('assets/korea_provinces.geojson');
+    final String response = await rootBundle.loadString('assets/geojson/korea_provinces.geojson');
     final Map<String, dynamic> geoJsonData = json.decode(response);
 
     final List features = geoJsonData['features'];
@@ -255,7 +278,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
 
     for (var feature in features) {
       final properties = feature['properties'];
-      final String? provinceName = properties['CTP_KOR_NM'];
+      final String? provinceName = properties['SIDO_NM'];
       final geometry = feature['geometry'];
 
       if (provinceName != null && geometry != null) {
@@ -316,7 +339,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
   }
 
   Future<List<SigunGuData>> _loadAndProcessSigunGuGeoJson() async {
-    final String response = await rootBundle.loadString('assets/korea_sigungu.geojson');
+    final String response = await rootBundle.loadString('assets/geojson/korea_sigungu.geojson');
     final Map<String, dynamic> geoJsonData = json.decode(response);
 
     final List features = geoJsonData['features'];
@@ -324,10 +347,9 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
 
     for (var feature in features) {
       final properties = feature['properties'];
-      final String? sigunGuName = properties['SIG_KOR_NM'];
-      final String? sigunGuCode = properties['SIG_CD'];
+      final String? sigunGuName = properties['SIGUNGU_NM'];
+      final String? sigunGuCode = properties['SIGUNGU_CD'];
       final geometry = feature['geometry'];
-
       if (sigunGuName != null && sigunGuCode != null && geometry != null) {
         List<List<LatLng>> latLngCoordinates = [];
         List<List<Point>> geoPointsForHitTest = [];
@@ -545,26 +567,6 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
       // 시/군/구 맵 상태일 때
       // 현재 확대된 시/도에 해당하는 시/군/구 데이터만 필터링
       List<SigunGuData> displayedSigunGu = sigunGuData.where((sigunGu) {
-        Map<String, String> provinceNameToSigCodePrefix = {
-          "서울특별시": "11",
-          "부산광역시": "26",
-          "대구광역시": "27",
-          "인천광역시": "28",
-          "광주광역시": "29",
-          "대전광역시": "30",
-          "울산광역시": "31",
-          "세종특별자치시": "36",
-          "경기도": "41",
-          "강원특별자치도": "51",
-          "충청북도": "43",
-          "충청남도": "44",
-          "전라북도": "45",
-          "전라남도": "46",
-          "경상북도": "47",
-          "경상남도": "48",
-          "제주특별자치도": "50",
-        };
-
         String? targetSigCodePrefix = provinceNameToSigCodePrefix[_expandedProvinceName!];
 
         if (targetSigCodePrefix != null) {
@@ -598,6 +600,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
 
   // 시/도 클릭 시 시/군/구 지도로 전환 로직
   void _onProvinceTapped(ProvinceData provinceData) {
+    print('_onProvinceTapped');
     // 애니메이션 시작 경계 설정
     _animationStartBounds = _mapBounds;
 
@@ -605,25 +608,13 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
       _expandedProvinceName = provinceData.name;
       _tappedProvinceName = null; // 롱프레스 강조 해제 (새로운 동작 시작)
       _tappedSigunGuCode = null; // 혹시 모를 시/군/구 하이라이트도 해제
-
       List<SigunGuData> filteredSigunGu = _loadedSigunGuData.where((sigunGu) {
-        Map<String, String> provinceNameToSigCodePrefix = {
-          "서울특별시": "11", "부산광역시": "26", "대구광역시": "27", "인천광역시": "28",
-          "광주광역시": "29", "대전광역시": "30", "울산광역시": "31", "세종특별자치시": "36",
-          "경기도": "41", "강원특별자치도": "51", // 강원특별자치도 SIG_CD 접두사 '51'
-          "충청북도": "43", "충청남도": "44",
-          "전라북도": "45", "전라남도": "46", "경상북도": "47", "경상남도": "48",
-          "제주특별자치도": "50",
-        };
-
         String? targetSigCodePrefix = provinceNameToSigCodePrefix[provinceData.name];
-
         if (targetSigCodePrefix != null) {
           return sigunGu.code.startsWith(targetSigCodePrefix);
         }
         return sigunGu.name.startsWith(provinceData.name.substring(0, 2));
       }).toList();
-
       if (filteredSigunGu.isNotEmpty) {
         double minLat = 90.0, maxLat = -90.0;
         double minLon = 180.0, maxLon = -180.0;
@@ -644,7 +635,6 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
         _animationEndBounds = null;
       }
     });
-
     if (_animationStartBounds != null && _animationEndBounds != null) {
       _animationController.forward(from: 0.0); // 애니메이션 시작 (시작점 0.0에서 1.0으로)
     } else {
@@ -686,6 +676,7 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
             break;
           }
         }
+        print('isInPolygon : $isInPolygon');
         if (isInPolygon) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${provinceData.name}: ${provinceData.value.toStringAsFixed(1)}%')),
@@ -700,26 +691,6 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
       }
 
       List<SigunGuData> displayedSigunGu = _loadedSigunGuData.where((sigunGu) {
-        Map<String, String> provinceNameToSigCodePrefix = {
-          "서울특별시": "11",
-          "부산광역시": "26",
-          "대구광역시": "27",
-          "인천광역시": "28",
-          "광주광역시": "29",
-          "대전광역시": "30",
-          "울산광역시": "31",
-          "세종특별자치시": "36",
-          "경기도": "41",
-          "강원특별자치도": "51",
-          "충청북도": "43",
-          "충청남도": "44",
-          "전라북도": "45",
-          "전라남도": "46",
-          "경상북도": "47",
-          "경상남도": "48",
-          "제주특별자치도": "50",
-        };
-
         String? targetSigCodePrefix = provinceNameToSigCodePrefix[_expandedProvinceName!];
 
         if (targetSigCodePrefix != null) {
@@ -802,26 +773,6 @@ class _KoreaCustomMapScreenState extends State<KoreaCustomMapScreen> with Single
                 List<SigunGuData> displayedSigunGuDataForExpandedProvince = [];
                 if (_expandedProvinceName != null) {
                   displayedSigunGuDataForExpandedProvince = _loadedSigunGuData.where((sigunGu) {
-                    Map<String, String> provinceNameToSigCodePrefix = {
-                      "서울특별시": "11",
-                      "부산광역시": "26",
-                      "대구광역시": "27",
-                      "인천광역시": "28",
-                      "광주광역시": "29",
-                      "대전광역시": "30",
-                      "울산광역시": "31",
-                      "세종특별자치시": "36",
-                      "경기도": "41",
-                      "강원특별자치도": "51",
-                      "충청북도": "43",
-                      "충청남도": "44",
-                      "전라북도": "45",
-                      "전라남도": "46",
-                      "경상북도": "47",
-                      "경상남도": "48",
-                      "제주특별자치도": "50",
-                    };
-
                     String? targetSigCodePrefix = provinceNameToSigCodePrefix[_expandedProvinceName!];
 
                     if (targetSigCodePrefix != null) {
