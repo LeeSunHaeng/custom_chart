@@ -5,6 +5,7 @@ import 'package:map_demo/cloud_chart/cloud_chart_screen.dart';
 import 'package:map_demo/list/list_screen.dart';
 import 'package:map_demo/pie_chart/pie_chart2_screen.dart';
 import 'package:map_demo/pie_chart/pie_chart_screen.dart';
+import 'package:map_demo/scaleable_map_chart.dart';
 import 'package:map_demo/shp_map_chart_screen.dart';
 import 'package:map_demo/web_view/web_view_screen.dart';
 
@@ -128,6 +129,17 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Text('카차트 웹뷰'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ZoomableWidget(),
+                    ),
+                  );
+                },
+                child: Text('줌 지도'),
               ),
             ],
           ),
