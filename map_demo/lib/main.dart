@@ -6,6 +6,7 @@ import 'package:map_demo/list/list_screen.dart';
 import 'package:map_demo/pie_chart/pie_chart2_screen.dart';
 import 'package:map_demo/pie_chart/pie_chart_screen.dart';
 import 'package:map_demo/scaleable_map_chart.dart';
+import 'package:map_demo/scaleable_map_chart2.dart';
 import 'package:map_demo/shp_map_chart_screen.dart';
 import 'package:map_demo/web_view/web_view_screen.dart';
 
@@ -140,6 +141,17 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Text('줌 지도'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FocalPointZoomContainer(),
+                    ),
+                  );
+                },
+                child: Text('줌 지도2'),
               ),
             ],
           ),

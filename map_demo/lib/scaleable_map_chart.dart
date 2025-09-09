@@ -49,7 +49,7 @@ class _ZoomableWidgetState extends State<ZoomableWidget> {
               // 1. 새로운 스케일 계산
               _scale = _previousScale * details.scale;
               // 스케일 최소/최대값 제한 (선택 사항)
-              _scale = _scale.clamp(1, 3.0);
+              _scale = _scale.clamp(1, 2.0);
 
               // 2. 새로운 오프셋 계산 (핵심 로직)
               // 손가락이 있는 지점을 기준으로 확대/축소하기 위한 오프셋 조정
@@ -72,11 +72,15 @@ class _ZoomableWidgetState extends State<ZoomableWidget> {
               //   // offsetChange = (midPoint - _focalPoint);
               //   // tempOffset = _previousOffset + offsetChange;
               // }
-              print('_scale : $_scale');
-              print('offsetChange : $offsetChange');
-
-              print('tempOffset : $newOffset');
-              _offset = newOffset;
+              print('scale : $_scale');
+              print('x : ${screenWidth - screenWidth * _scale}');
+              // print('y : ${screenHeight - screenHeight * _scale}');
+              print('newOffset : $newOffset');
+              double difference = ((screenWidth * _scale - screenWidth) / 4).abs();
+              final double dx = newOffset.dx.clamp(-difference, difference);
+              // final double dy = newOffset.dx.clamp(screenHeight - screenHeight * _scale, screenHeight * _scale - screenHeight);
+              _offset = Offset(dx, newOffset.dy);
+              // _offset = newOffset;
               _updateFocalPoint = details.focalPoint;
             });
           },
@@ -90,7 +94,7 @@ class _ZoomableWidgetState extends State<ZoomableWidget> {
                 offset: _offset,
                 focalPoint: _focalPoint,
                 updateFocalPoint: _updateFocalPoint,
-                width: MediaQuery.of(context).size.width / 2,
+                width: MediaQuery.of(context).size.width,
                 midPoint: _midPoint,
               ),
             ),
